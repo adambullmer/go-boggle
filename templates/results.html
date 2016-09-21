@@ -1,0 +1,30 @@
+{{define "title"}}Results{{end}}
+
+{{define "body"}}
+<h1>Online Boggle Solver</h1>
+
+<p>Here are the results of your gameboard</p>
+
+<div class="center-width">
+	<div class="grid grid-gutters">
+		{{range .Words}}
+			<div class="grid-cell">
+				<div class="result">{{.}}</div>
+			</div>
+		{{else}}
+			<div class="grid-cell">
+				<h3>No results found. Try checking your board and input and try again</h3>
+			</div>
+		{{end}}
+	</div>
+
+	<div class="grid grid-gutters">
+		<div class="grid-cell">
+			<div class="result">Total Matches: {{len .Words}}</div>
+		</div>
+		<div class="grid-button-wrapper">
+			<button class="button result" onclick="window.location = '/';">Restart</button>
+		</div>
+	</div>
+</div>
+{{end}}
