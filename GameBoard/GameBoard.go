@@ -63,8 +63,9 @@ func (g *GameBoard) SetBoard(boardMap []string) {
     }
 }
 
-func (g *GameBoard) CheckBoard() []string {
+func (g *GameBoard) CheckBoard() map[int][]string {
     wip := new(WordInProgress)
+    wip.Words = make(map[int][]string)
 
     for y, row := range g.Board {
         for x, _ := range row {
@@ -72,22 +73,28 @@ func (g *GameBoard) CheckBoard() []string {
         }
     }
 
-    // Use map to record duplicates as we find them.
-    encountered := map[string]bool{}
-    result := []string{}
+    keys := []int{}
+    for r := range wip.Words {
+        keys = append(keys, r)
+    }
+    sort.Ints(keys)
 
-    for v := range wip.Words {
-        if encountered[wip.Words[v]] == true {
-        } else {
-            encountered[wip.Words[v]] = true
-            result = append(result, wip.Words[v])
+    wordLists := new(WordInProgress)
+    wordLists.Words = make(map[int][]string)
+    for key := range keys {
+        if key < 3 {
+            continue
         }
+
+        words := wip.Words[key]
+
+        sort.Strings(words)
+        wordLists.Words[key] = words
     }
 
-    sort.Strings(result)
-    log.Println(result)
+    log.Println(wordLists.Words)
 
-    return result
+    return wordLists.Words
 }
 
 func (g *GameBoard) CheckNeighbors(wip *WordInProgress, posX int, posY int) error {
@@ -195,7 +202,7 @@ func (c *Cell) String() string {
 // Word In Progress
 type WordInProgress struct {
     Letters []string
-    Words []string
+    Words map[int][]string
 }
 
 func (w *WordInProgress) Compress() string {
@@ -220,5 +227,19 @@ func (w *WordInProgress) Pop() string {
 }
 
 func (w *WordInProgress) AddWord(word string) {
-    w.Words = append(w.Words, word)
+    key := len(word)
+    list, ok := w.Words[key]
+    if ok {
+    } else {
+        list = []string{}
+    }
+
+    // dedupe list
+    for _, existingWord := range list {
+        if word == existingWord {
+            return
+        }
+    }
+
+    w.Words[key] = append(list, word)
 }

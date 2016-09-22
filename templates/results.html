@@ -6,8 +6,10 @@
 <p>Here are the results of your gameboard</p>
 
 <div class="center-width">
+	{{range $key, $value := .Words}}
+	<h3>{{$key}} Letter Words <small>{{len $value}} Words</small></h3>
 	<div class="grid grid-gutters">
-		{{range .Words}}
+		{{range $value}}
 			<div class="grid-cell">
 				<div class="result">{{.}}</div>
 			</div>
@@ -17,10 +19,11 @@
 			</div>
 		{{end}}
 	</div>
+	{{end}}
 
 	<div class="grid grid-gutters">
 		<div class="grid-cell">
-			<div class="result">Total Matches: {{len .Words}}</div>
+			<div class="result">Total Matches: {{.WordCount}}</div>
 		</div>
 		<div class="grid-button-wrapper">
 			<button class="button result" onclick="window.location = '/';">Restart</button>

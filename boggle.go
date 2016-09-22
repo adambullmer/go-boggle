@@ -93,11 +93,18 @@ func solverHandler(w http.ResponseWriter, r *http.Request) {
     gameBoard.Init(boardMap, "./dictionary.txt")
     gameBoard.OutputBoard()
     words := gameBoard.CheckBoard()
+    wordCount := 0
+
+    for _, wordList := range words {
+        wordCount += len(wordList)
+    }
 
     data := struct {
-        Words []string
+        Words map[int][]string
+        WordCount int
     } {
         words,
+        wordCount,
     }
 
     if err := tmpl.ExecuteTemplate(w, "layout", &data); err != nil {
