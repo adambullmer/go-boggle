@@ -1,97 +1,24 @@
 {{define "title"}}Home{{end}}
 
-{{define "body"}}
-<h1>Online Boggle Solver</h1>
+{{define "nav"}}
+<li>Home</li>
+{{end}}
 
+{{define "body"}}
 <p>Insert your boggle gameboard below and press submit to get a calculation of the boggle words available on your board</p>
 
-<div class="center-width">
-	<div class="gameboard-wrapper">
-		<form class="grid grid-gutters grid-row-5" action="/solve" method="POST">
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
+<div class="gameboard-wrapper">
+    <form class="gameboard grid grid-gutters grid-row-5" action="/solve" method="POST">
 
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
+        {{range loop 25}}
+        <div class="grid-cell columns">
+            <input name="board[]" type="text" required pattern="^[a-zA-Z]+$" maxlength="2">
+        </div>
+        {{end}}
 
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-			<div class="grid-cell">
-				<input name="board[]" type="text">
-			</div>
-
-			<div class="grid-button-wrapper">
-				<input class="button" type="submit" value="Submit">
-			</div>
-		</form>
-	</div>
+        <div class="grid-button-wrapper">
+            <input class="button" type="submit" value="Submit">
+        </div>
+    </form>
 </div>
 {{end}}

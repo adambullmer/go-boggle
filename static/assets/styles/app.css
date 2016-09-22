@@ -1,9 +1,8 @@
-html {
-    font-size: 62.5%;
-}
-
-body {
-    font-size: 1.5rem;
+/**
+ * Zurb Foundation Overrides
+ */
+.title-bar {
+    margin-bottom: 1rem;
 }
 
 /**
@@ -31,49 +30,40 @@ body {
  * Grids with gutters
  */
 .grid-gutters {
-    position: relative;
-    left: -1rem;
-    top: -1rem;
+    margin: 0 -0.5em;
 }
 
 .grid-gutters > .grid-cell {
-    padding: 1em 0 0 1em;
+    padding: 0.5em;
 }
 
-.grid-gutters.grid-row-5 > .grid-cell {
-    flex: 0 0 calc(20% - 1em);
-}
-
-.gameboard-wrapper {
-    margin-top: 4rem;
-    padding: 1rem;
-}
-
-form {
-    max-height: calc(100vmin - 1rem);
+.gameboard-wrapper .gameboard {
     max-width: calc(100vmin - 1rem);
     margin: 0 auto;
 }
 
-input {
-    font-size: 16vmin;
-}
-
-input[type="text"] {
+.gameboard-wrapper input {
     margin: 0;
-    border: 0;
     padding: 0;
-    width: 100%;
+    height: auto;
     text-align: center;
+    font-size: 15vmin;
 }
 
 .grid-button-wrapper {
-    padding: 1em 0 0 1em;
-    flex-grow: 1;
+    padding: 0.5em;
+    flex: 1;
+}
+
+.grid-button-wrapper .button {
+    line-height: 1.5;
+    margin: 0;
+    border: 0;
 }
 
 .button {
     width: 100%;
+    font-size: 1rem;
 }
 
 .grid-cell:nth-child(odd) input {
@@ -82,6 +72,10 @@ input[type="text"] {
 
 .grid-cell:nth-child(even) input {
     background-color: silver;
+}
+
+.grid-cell input.is-invalid-input:not(:focus) {
+    background-color: rgba(236,88,64,.1)
 }
 
 .grid-cell:nth-child(odd) > .result {
@@ -95,4 +89,13 @@ input[type="text"] {
 .result {
     padding: 1em;
     text-align: center;
+}
+
+.section-title .label {
+    position: relative;
+    top: -0.3rem;
+}
+
+.section {
+    margin-bottom: 1rem;
 }

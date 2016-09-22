@@ -1,33 +1,38 @@
 {{define "title"}}Results{{end}}
 
+{{define "nav"}}
+<li><a href="/">Home</a></li>
+<li>Results</li>
+{{end}}
+
 {{define "body"}}
-<h1>Online Boggle Solver</h1>
+{{range $key, $value := .Words}}
+<h4 class="section-title">{{$key}} Letter Words <small class="label">{{len $value}} Words</small></h4>
+<div class="section grid grid-gutters">
+    {{range $value}}
+        <div class="grid-cell">
+            <div class="result">{{.}}</div>
+        </div>
+    {{end}}
+</div>
+{{else}}
+<div class="callout alert">
+    <div class="section grid grid-gutters">
+        <div class="grid-cell">
+            <h3>No results found. Try checking your board and input and try again</h3>
+        </div>
+    </div>
+</div>
+{{end}}
 
-<p>Here are the results of your gameboard</p>
-
-<div class="center-width">
-	{{range $key, $value := .Words}}
-	<h3>{{$key}} Letter Words <small>{{len $value}} Words</small></h3>
-	<div class="grid grid-gutters">
-		{{range $value}}
-			<div class="grid-cell">
-				<div class="result">{{.}}</div>
-			</div>
-		{{else}}
-			<div class="grid-cell">
-				<h3>No results found. Try checking your board and input and try again</h3>
-			</div>
-		{{end}}
-	</div>
-	{{end}}
-
-	<div class="grid grid-gutters">
-		<div class="grid-cell">
-			<div class="result">Total Matches: {{.WordCount}}</div>
-		</div>
-		<div class="grid-button-wrapper">
-			<button class="button result" onclick="window.location = '/';">Restart</button>
-		</div>
-	</div>
+<div class="grid grid-gutters">
+    {{if gt .WordCount 0}}
+    <div class="grid-cell">
+        <div class="result">Total Matches: {{.WordCount}}</div>
+    </div>
+    {{end}}
+    <div class="grid-button-wrapper">
+        <button class="button result" onclick="window.location = '/';">Restart</button>
+    </div>
 </div>
 {{end}}

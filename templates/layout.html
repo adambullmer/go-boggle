@@ -4,10 +4,36 @@
 <head>
     <meta charset="utf-8">
     <title>Online Boggle Solver | {{template "title" .}}</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.2.3/foundation.min.css" integrity="sha256-d0O0RqD1Znb+7fJMu0uPCNCBHMt7gYVguCC5Z+M9vFw=" crossorigin="anonymous" />
     <link rel="stylesheet" href="/assets/styles/app.css">
+
 </head>
 <body>
-    {{template "body" .}}
+    <div class="title-bar">
+        <div class="title-bar-left">
+            <!-- <button class="menu-icon" type="button"></button> -->
+            <span class="title-bar-title">Boggle Solver</span>
+        </div>
+        <!-- <div class="title-bar-right">
+            <button class="menu-icon" type="button"></button>
+        </div> -->
+    </div>
+    <div class="column">
+        <nav aria-label="You are here:" role="navigation">
+            <ul class="breadcrumbs">
+                {{template "nav" .}}
+            </ul>
+        </nav>
+    </div>
+
+    <div class="column">
+        {{template "body" .}}
+    </div>
+
+    <!-- <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script> -->
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.2.3/foundation.min.js" integrity="sha256-orE03LSc9KVys7WmCWaOa5LauIvfUpJeaiKbggQBB+8=" crossorigin="anonymous"></script> -->
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.2.3/plugins/foundation.abide.js" integrity="sha256-ONyHm2141rqlMim5Llijgqn1IwYr6dfXm+HNfjCscJ0=" crossorigin="anonymous"></script> -->
 </body>
 </html>
 {{end}}

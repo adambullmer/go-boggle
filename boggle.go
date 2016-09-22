@@ -33,7 +33,11 @@ func renderTemplate(w http.ResponseWriter, r *http.Request, templateName string)
         return new(template.Template), errors.New("TemplateName is a directory")
     }
 
-    tmpl, err := template.ParseFiles(layout, page)
+    tmpl, err := template.New(templateName).Funcs(template.FuncMap{
+        "loop": func(n int) []struct{} {
+            return make([]struct{}, n)
+        },
+    }).ParseFiles(layout, page)
 
     if err != nil {
         // Log the detailed error
