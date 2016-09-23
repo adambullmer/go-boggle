@@ -81,7 +81,7 @@ func (g *GameBoard) CheckBoard() map[int][]string {
 
     wordLists := new(WordInProgress)
     wordLists.Words = make(map[int][]string)
-    for key := range keys {
+    for _, key := range keys {
         if key < 3 {
             continue
         }
