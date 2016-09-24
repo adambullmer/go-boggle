@@ -94,8 +94,8 @@ func solverHandler(w http.ResponseWriter, r *http.Request) {
     boardHeight := 5
 
     gameBoard := GameBoard.GameBoard{Height: boardHeight, Width: boardWidth}
-    gameBoard.Init(boardMap, "./dictionary.txt")
-    gameBoard.OutputBoard()
+    gameBoard.Init(boardMap, "./Lexicon/sowpods.txt")
+    log.Println(gameBoard)
     words := gameBoard.CheckBoard()
     wordCount := 0
 

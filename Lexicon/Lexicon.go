@@ -7,7 +7,7 @@ import (
     "os"
 )
 
-func WordPrefix(word string) (string, bool) {
+func wordPrefix(word string) (string, bool) {
     if len(word) < 3 {
         return "", false
     }
@@ -16,8 +16,8 @@ func WordPrefix(word string) (string, bool) {
 }
 
 type WordPrefixGroup struct {
-    Prefix string                    // Character(s) in this set (redundant in use as the previous map will have this same prefix)
-    IsWord bool                      // Bool if the prefix to this letter is also a word
+    Prefix string                     // Character(s) in this set (redundant in use as the previous map will have this same prefix)
+    IsWord bool                       // Bool if the prefix to this letter is also a word
     Words map[string]WordPrefixGroup  // Map of the next list of words
 }
 
@@ -26,10 +26,26 @@ type Lexicon struct {
     Words map[string]WordPrefixGroup
 }
 
-func (l *Lexicon) String() string {
+func (l Lexicon) String() string {
     return fmt.Sprintln(l.Words)
 }
 
+/**
+ * Reads in a lexicon from a filename and holds it in memory while the current solver is running.
+ * Makes a tree map of the words so that when searching, we can tell the moment we deviate from
+ * possible words. Starts with a key of the first 3 letters since that is our minimum word length
+ *
+ * @example
+ * test, tests, testing
+ *
+ * false      true     false    false    true
+ * [ tes ] -- [ t ] -- [ i ] -- [ n ] -- [ g ]
+ *                  \
+ *                   \ true
+ *                     [ s ]
+ *
+ * @param  string  filename  file name and location of the lexicon to read and load
+ */
 func (l *Lexicon) LoadLexicon(filename string) {
     l.Words = make(map[string]WordPrefixGroup)
     file, err := os.Open(filename)
@@ -42,19 +58,18 @@ func (l *Lexicon) LoadLexicon(filename string) {
         // Each line is a new word to be added into the lexicon
         word := scanner.Text()
 
-        prefix, ok := WordPrefix(word)
+        prefix, ok := wordPrefix(word)
         if ok == false {
             continue
         }
 
         wordPrefix, ok := l.Words[prefix]
-        if ok {
-        } else {
+        if ok == false{
             isWord := prefix == word
             wordPrefix = WordPrefixGroup{Prefix: prefix, IsWord: isWord, Words: make(map[string]WordPrefixGroup)}
         }
 
-        group, _ := CreateWordGroups(wordPrefix, word, len(prefix))
+        group, _ := createWordGroups(wordPrefix, word, len(prefix))
         wordPrefix.Words[group.Prefix] = group
 
         l.Words[prefix] = wordPrefix
@@ -65,22 +80,20 @@ func (l *Lexicon) LoadLexicon(filename string) {
     }
 }
 
-func CreateWordGroups(parentGroup WordPrefixGroup, word string, index int) (WordPrefixGroup, error)  {
+func createWordGroups(parentGroup WordPrefixGroup, word string, index int) (WordPrefixGroup, error)  {
     if index == len(word) {
         return WordPrefixGroup{}, errors.New("Out of characters")
     }
     char := string(word[index])
     group, ok := parentGroup.Words[char]
-    if ok {
-    } else {
+    if ok == false {
         group = WordPrefixGroup{Prefix: char, Words: make(map[string]WordPrefixGroup)}
     }
 
-    nextGroups, err := CreateWordGroups(group, word, index + 1)
+    nextGroups, err := createWordGroups(group, word, index + 1)
 
     if err == nil {
-        if _, ok := group.Words[nextGroups.Prefix]; ok {
-        } else {
+        if _, ok := group.Words[nextGroups.Prefix]; ok == false {
             group.Words[nextGroups.Prefix] = nextGroups
         }
     } else {
@@ -91,46 +104,36 @@ func CreateWordGroups(parentGroup WordPrefixGroup, word string, index int) (Word
 }
 
 
+/**
+ * Check if the provided word is in the lexicon. Traverses through the lexicon map.
+ * @param  stringn  word  The word to be checked against.
+ * @return bool     true if the word was found in the lexicon
+ * @return error    an error if the word goes beyond a possble map. This is important to
+ *                  the ability to discontinue looking for longer words efficiently.
+ */
 func (l *Lexicon) CheckWord(word string) (bool, error) {
-    prefix, ok := WordPrefix(word)
+    prefix, ok := wordPrefix(word)
     if ok == false {
         return false, errors.New("Word not Long enough for a prefix")
     }
 
-    if wordPrefix, ok := l.Words[prefix]; ok {
-        if len(word) == len(prefix) {
-            if wordPrefix.IsWord == true {
-                return true, nil
-            }
-
-            return false, nil
-        }
-
-        return recursiveCheckWord(wordPrefix, word, len(prefix))
-    } else {
+    wordPrefix, ok := l.Words[prefix]
+    if ok == false {
         return false, errors.New("Prefix Not Found")
     }
 
-    // Word not found, no specific error necessary
-    return false, nil
+    return recursiveCheckWord(wordPrefix, word, len(prefix))
 }
 
 func recursiveCheckWord(group WordPrefixGroup, word string, index int) (bool, error) {
-    // No more letters left
     if len(word) == index {
-        return false, nil
+        return group.IsWord, nil
     }
 
-    if nextGroup, ok := group.Words[string(word[index])]; ok {
-        isLastLetter := len(word) - 1 == index
-        if isLastLetter && nextGroup.IsWord {
-            return true, nil
-        } else {
-            return recursiveCheckWord(nextGroup, word, index + 1)
-        }
-    } else {
+    nextGroup, ok := group.Words[string(word[index])]
+    if ok == false {
         return false, errors.New("Deviated from mapped lexicon words")
     }
 
-    return false, nil
+    return recursiveCheckWord(nextGroup, word, index + 1)
 }
