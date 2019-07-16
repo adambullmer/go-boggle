@@ -22,6 +22,9 @@ func Run() error {
 	http.HandleFunc("/solve", solverHandler)
 	http.HandleFunc("/", viewHandler)
 
+	http.HandleFunc("/healthcheck", health)
+	http.HandleFunc("/health", health)
+
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 
