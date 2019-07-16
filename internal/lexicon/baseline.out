@@ -1,0 +1,6 @@
+goos: linux
+goarch: amd64
+pkg: github.com/adambullmer/go-boggle/internal/lexicon
+BenchmarkLexicon-8   	      20	 253482800 ns/op	222797358 B/op	 1620105 allocs/op
+PASS
+ok  	github.com/adambullmer/go-boggle/internal/lexicon	9.708s

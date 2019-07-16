@@ -5,7 +5,6 @@ import (
 	"sort"
 
 	"github.com/adambullmer/go-boggle/internal/lexicon"
-	log "github.com/sirupsen/logrus"
 )
 
 type GameBoard struct {
@@ -99,8 +98,6 @@ func (g *GameBoard) CheckBoard() map[int][]string {
 		sort.Strings(words)
 		wordLists.Words[key] = words
 	}
-
-	log.Info(wordLists.Words)
 
 	return wordLists.Words
 }
