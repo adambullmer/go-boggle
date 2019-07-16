@@ -23,6 +23,6 @@ _testmain.go
 *.test
 *.prof
 
-boggle
-go-boggle
-vendor
+/boggle
+/go-boggle
+/vendor

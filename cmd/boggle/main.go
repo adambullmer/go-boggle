@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 
+	"github.com/adambullmer/go-boggle/internal/gameboard"
+	"github.com/adambullmer/go-boggle/internal/platform/web"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -13,7 +15,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	pageName += ".html"
 
-	tmpl, err := RenderTemplate(w, r, pageName)
+	tmpl, err := web.RenderTemplate(w, r, pageName)
 	if err != nil {
 		return
 	}
@@ -39,7 +41,7 @@ func solverHandler(w http.ResponseWriter, r *http.Request) {
 		// Handle error
 	}
 
-	tmpl, err := RenderTemplate(w, r, "results.html")
+	tmpl, err := web.RenderTemplate(w, r, "results.html")
 	if err != nil {
 		return
 	}
@@ -48,7 +50,7 @@ func solverHandler(w http.ResponseWriter, r *http.Request) {
 	boardWidth := 5
 	boardHeight := 5
 
-	gameBoard := GameBoard{Height: boardHeight, Width: boardWidth}
+	gameBoard := gameboard.GameBoard{Height: boardHeight, Width: boardWidth}
 	gameBoard.Init(boardMap, "./dictionaries/sowpods.txt")
 	log.Println(gameBoard)
 	words := gameBoard.CheckBoard()

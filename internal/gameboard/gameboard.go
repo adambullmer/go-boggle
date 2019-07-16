@@ -1,9 +1,10 @@
-package main
+package gameboard
 
 import (
 	"errors"
 	"sort"
 
+	"github.com/adambullmer/go-boggle/internal/lexicon"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -11,7 +12,7 @@ type GameBoard struct {
 	Width      int
 	Height     int
 	Board      [][]Cell
-	ValidWords *Lexicon
+	ValidWords *lexicon.Lexicon
 }
 
 /**
@@ -24,7 +25,7 @@ func (g *GameBoard) Init(boardMap []string, lexLocation string) {
 	g.initBoard()
 	g.setBoard(boardMap)
 
-	lexicon := new(Lexicon)
+	lexicon := new(lexicon.Lexicon)
 	lexicon.LoadLexicon(lexLocation)
 	g.ValidWords = lexicon
 }
