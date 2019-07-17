@@ -11,7 +11,7 @@ type GameBoard struct {
 	Width      int
 	Height     int
 	Board      [][]Cell
-	ValidWords *lexicon.Lexicon
+	ValidWords lexicon.WordPrefixGroup
 }
 
 /**
@@ -24,8 +24,7 @@ func (g *GameBoard) Init(boardMap []string, lexLocation string) {
 	g.initBoard()
 	g.setBoard(boardMap)
 
-	lexicon := new(lexicon.Lexicon)
-	lexicon.LoadLexicon(lexLocation)
+	lexicon, _ := lexicon.NewLexicon(lexLocation)
 	g.ValidWords = lexicon
 }
 
@@ -113,7 +112,7 @@ func (g *GameBoard) checkNeighbors(wip *WordInProgress, posX int, posY int) erro
 	if len(wip.Letters) >= 3 {
 		// check dictionary
 		word := wip.String()
-		valid, err := g.ValidWords.CheckWord(word)
+		valid, err := lexicon.CheckWord(g.ValidWords, word)
 
 		// early return if prefix isn't in lexicon
 		if err != nil {
