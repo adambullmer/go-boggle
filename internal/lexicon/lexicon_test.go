@@ -108,7 +108,7 @@ func BenchmarkLexiconLarge(b *testing.B) {
 
 func BenchmarkReadSmall(b *testing.B) {
 	const dictionary = testDictionary
-	h := func(w string) {}
+	h := func(w []byte) {}
 	file, _ := os.Open(dictionary)
 	defer file.Close()
 	for i := 0; i < b.N; i++ {
@@ -117,7 +117,7 @@ func BenchmarkReadSmall(b *testing.B) {
 }
 
 func BenchmarkReadLarge(b *testing.B) {
-	h := func(w string) {}
+	h := func(w []byte) {}
 	file, _ := os.Open(largeDictionary)
 	defer file.Close()
 	for i := 0; i < b.N; i++ {

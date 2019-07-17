@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"io"
 	"os"
-	"strings"
 )
 
 /*
@@ -41,27 +40,28 @@ false      true  /  true
 func NewLexicon(filename string) (WordPrefixGroup, error) {
 	lexicon := make(WordPrefixGroup)
 
-	h := func(word string) {
-		prefix, rest := SplitWord(word)
-		if prefix == "" {
-			// ignore words that are too short
+	h := func(word []byte) {
+		if len(word) < PrefixLength {
 			return
 		}
+		prefix := string(word[:PrefixLength])
+		rest := word[PrefixLength:]
 
 		wordPrefix, ok := lexicon[prefix]
 		if ok == false {
-			isWord := prefix == word
+			isWord := len(word) == PrefixLength
 			wordPrefix = NewWordPrefix(prefix, isWord)
 			lexicon[prefix] = wordPrefix
 		}
 
-		for i, c := range strings.Split(rest, "") {
+		for i, char := range rest {
 			isWord := i+1 == len(rest)
+			str := string(char)
 
-			nextWord, ok := wordPrefix.Words[c]
+			nextWord, ok := wordPrefix.Words[str]
 			if ok == false {
-				nextWord = NewWordPrefix(c, isWord)
-				wordPrefix.Words[c] = nextWord
+				nextWord = NewWordPrefix(str, isWord)
+				wordPrefix.Words[str] = nextWord
 			}
 			wordPrefix = nextWord
 		}
@@ -78,15 +78,23 @@ func NewLexicon(filename string) (WordPrefixGroup, error) {
 	return lexicon, read(file, h)
 }
 
-func read(file *os.File, h func(word string)) error {
+func read(file *os.File, h func(word []byte)) error {
 	file.Seek(0, io.SeekStart)
-	scanner := bufio.NewScanner(file)
-	scanner.Buffer(make([]byte, 0, 1024), 1024)
-	for scanner.Scan() {
-		// Each line is a new word to be added into the lexicon
-		word := scanner.Text()
+	r := bufio.NewReader(file)
+	var err error
+
+	for {
+		word, _, err := r.ReadLine()
+		if err != nil {
+			break
+		}
+
 		h(word)
 	}
 
-	return scanner.Err()
+	if err == io.EOF {
+		return nil
+	}
+
+	return err
 }
