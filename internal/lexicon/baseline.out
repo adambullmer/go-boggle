@@ -1,6 +1,11 @@
 goos: linux
 goarch: amd64
 pkg: github.com/adambullmer/go-boggle/internal/lexicon
-BenchmarkLexicon-8   	      20	 253482800 ns/op	222797358 B/op	 1620105 allocs/op
+BenchmarkLexicon-8              	      20	 247921350 ns/op	222796042 B/op	 1620101 allocs/op
+BenchmarkCheckWordShort-8       	200000000	        26.2 ns/op	       1 B/op	       0 allocs/op
+BenchmarkCheckWordMedium-8      	100000000	        56.0 ns/op	       2 B/op	       0 allocs/op
+BenchmarkCheckWordLong-8        	50000000	        79.5 ns/op	       4 B/op	       0 allocs/op
+BenchmarkCheckWordExtraLong-8   	20000000	       175 ns/op	      10 B/op	       0 allocs/op
+BenchmarkCheckWordMissing-8     	50000000	        95.4 ns/op	      20 B/op	       1 allocs/op
 PASS
-ok  	github.com/adambullmer/go-boggle/internal/lexicon	9.708s
+ok  	github.com/adambullmer/go-boggle/internal/lexicon	50.489s
