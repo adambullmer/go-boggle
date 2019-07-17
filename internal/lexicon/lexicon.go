@@ -2,8 +2,9 @@ package lexicon
 
 import (
 	"bufio"
-	"errors"
+	"io"
 	"os"
+	"strings"
 )
 
 /*
@@ -39,60 +40,53 @@ false      true  /  true
 */
 func NewLexicon(filename string) (WordPrefixGroup, error) {
 	lexicon := make(WordPrefixGroup)
-	file, err := os.Open(filename)
-	if err != nil {
-		// This should probably end the app
-	}
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		// Each line is a new word to be added into the lexicon
-		word := scanner.Text()
-
-		prefix, ok := wordPrefix(word)
-		if ok == false {
-			continue
+	h := func(word string) {
+		prefix, rest := SplitWord(word)
+		if prefix == "" {
+			// ignore words that are too short
+			return
 		}
 
 		wordPrefix, ok := lexicon[prefix]
 		if ok == false {
 			isWord := prefix == word
 			wordPrefix = NewWordPrefix(prefix, isWord)
+			lexicon[prefix] = wordPrefix
 		}
 
-		group, _ := createWordGroups(wordPrefix, word, len(prefix))
-		wordPrefix.Words[group.Prefix] = group
+		for i, c := range strings.Split(rest, "") {
+			isWord := i+1 == len(rest)
 
-		lexicon[prefix] = wordPrefix
+			nextWord, ok := wordPrefix.Words[c]
+			if ok == false {
+				nextWord = NewWordPrefix(c, isWord)
+				wordPrefix.Words[c] = nextWord
+			}
+			wordPrefix = nextWord
+		}
 	}
 
-	if err := scanner.Err(); err != nil {
-		// This might also need to end the app
+	file, err := os.Open(filename)
+	defer file.Close()
+
+	if err != nil {
+		// This should probably end the app
+		return nil, err
 	}
 
-	return lexicon, nil
+	return lexicon, read(file, h)
 }
 
-func createWordGroups(parentGroup WordPrefix, word string, index int) (WordPrefix, error) {
-	if index == len(word) {
-		return WordPrefix{}, errors.New("Out of characters")
+func read(file *os.File, h func(word string)) error {
+	file.Seek(0, io.SeekStart)
+	scanner := bufio.NewScanner(file)
+	scanner.Buffer(make([]byte, 0, 1024), 1024)
+	for scanner.Scan() {
+		// Each line is a new word to be added into the lexicon
+		word := scanner.Text()
+		h(word)
 	}
 
-	char := string(word[index])
-	group, ok := parentGroup.Words[char]
-	if ok == false {
-		group = NewWordPrefix(char, false)
-	}
-
-	nextGroups, err := createWordGroups(group, word, index+1)
-
-	if err == nil {
-		if _, ok := group.Words[nextGroups.Prefix]; ok == false {
-			group.Words[nextGroups.Prefix] = nextGroups
-		}
-	} else {
-		group.IsWord = true
-	}
-
-	return group, nil
+	return scanner.Err()
 }
