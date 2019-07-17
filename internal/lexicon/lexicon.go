@@ -79,22 +79,17 @@ func NewLexicon(filename string) (WordPrefixGroup, error) {
 }
 
 func read(file *os.File, h func(word []byte)) error {
+	// Buffer bounds were 16Kb - 64Kb while maintaining compute efficiency on large dictionaries.
+	const readBuffer = 16 * 1024
 	file.Seek(0, io.SeekStart)
-	r := bufio.NewReader(file)
-	var err error
-
-	for {
-		word, _, err := r.ReadLine()
-		if err != nil {
-			break
-		}
-
+	scanner := bufio.NewScanner(file)
+	buf := make([]byte, 0, readBuffer)
+	scanner.Buffer(buf, readBuffer)
+	for scanner.Scan() {
+		// Each line is a new word to be added into the lexicon
+		word := scanner.Bytes()
 		h(word)
 	}
 
-	if err == io.EOF {
-		return nil
-	}
-
-	return err
+	return scanner.Err()
 }
