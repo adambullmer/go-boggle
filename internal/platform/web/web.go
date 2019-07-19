@@ -2,15 +2,13 @@ package web
 
 import (
 	"errors"
+	"html/template"
 	"net/http"
 	"os"
 	"path"
-	"text/template"
 
 	log "github.com/sirupsen/logrus"
 )
-
-var AppName = "Online Boggle Solver"
 
 func RenderTemplate(w http.ResponseWriter, r *http.Request, templateName string) (*template.Template, error) {
 	layout := path.Join("templates", "layout.html")

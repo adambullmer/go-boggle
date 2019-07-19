@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/adambullmer/go-boggle/internal/gameboard"
+	"github.com/adambullmer/go-boggle/internal/lexicon"
 	"github.com/adambullmer/go-boggle/internal/platform/web"
 	log "github.com/sirupsen/logrus"
 )
@@ -37,13 +38,11 @@ func solverHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	boardMap := r.Form["board[]"]
-	boardWidth := 5
-	boardHeight := 5
 
-	gameBoard := gameboard.GameBoard{Height: boardHeight, Width: boardWidth}
-	gameBoard.Init(boardMap, "./dictionaries/sowpods.txt")
+	gameBoard := gameboard.NewGameBoard(boardMap)
+	lexicon, _ := lexicon.NewLexicon("./dictionaries/sowpods.txt")
 	log.Println(gameBoard)
-	words := gameBoard.CheckBoard()
+	words := gameBoard.CheckBoard(lexicon)
 	wordCount := 0
 
 	for _, wordList := range words {

@@ -1,12 +1,17 @@
 package gameboard
 
 import (
+	"bytes"
 	"errors"
 	"sort"
+	"text/template"
 
 	"github.com/adambullmer/go-boggle/internal/lexicon"
+	"github.com/adambullmer/go-boggle/internal/rules"
+	log "github.com/sirupsen/logrus"
 )
 
+// The GameBoard type holds the state of all the characters on the gamebaord
 type GameBoard struct {
 	Width      int
 	Height     int
@@ -14,68 +19,70 @@ type GameBoard struct {
 	ValidWords lexicon.WordPrefixGroup
 }
 
-/**
- * Initializes the GameBoard. Triggers loading the dictionary, assigns the user input to the gameboard
- *
- * @param  []string   boardMap    Flat string of characters in the board.
- * @param  string     lexLocation which lexicon to be used when checking for words
- */
-func (g *GameBoard) Init(boardMap []string, lexLocation string) {
-	g.initBoard()
-	g.setBoard(boardMap)
+/*
+NewGameBoard is a factory for the gameboard data. It will leave the board in its
+zero state to keep the factory lean and efficient.
+*/
+func NewGameBoard(boardMap []string) GameBoard {
+	const height = 5
+	const width = 5
 
-	lexicon, _ := lexicon.NewLexicon(lexLocation)
-	g.ValidWords = lexicon
-}
-
-func (g *GameBoard) initBoard() {
-	g.Board = make([][]Cell, g.Height)
-	for x := range g.Board {
-		g.Board[x] = make([]Cell, g.Width)
-	}
-}
-
-/**
- * Overrides the default stringification of this struct.
- */
-func (g GameBoard) String() string {
-	str := "[\n"
-	for y := range g.Board {
-		str += "  [ "
-		for x := range g.Board[y] {
-			str += g.Board[y][x].String() + " "
+	board := make([][]Cell, height)
+	for x, char := range boardMap {
+		posX := x % width
+		posY := x / height
+		if x%height == 0 {
+			board[posY] = make([]Cell, width)
 		}
-		str += "]\n"
+		board[posY][posX] = Cell{Character: char}
 	}
 
-	str += "]"
-
-	return str
-}
-
-func (g *GameBoard) setBoard(boardMap []string) {
-	for x := 0; x < len(boardMap); x++ {
-		posX := x % g.Width
-		posY := x / g.Height
-		g.Board[posY][posX] = Cell{Character: boardMap[x]}
+	// Not populating t
+	return GameBoard{
+		Height: height,
+		Width:  width,
+		Board:  board,
 	}
 }
 
-/**
- * This one is the main bit. Iterates over the entire board, looking for words.
- * Words can be strung together from any direction, so long as a letter has not
- * been used more than once in the same word.
- *
- * @returns  map[int][]string  a map of lists of words, sorted alphabetically,
- *                             grouped by word length.
- */
-func (g *GameBoard) CheckBoard() map[int][]string {
-	wip := new(WordInProgress)
+const strTemplate = `
+┌───────────────────────────────────────────────┐
+{{- range .Board }}
+│						│
+│	{{ range . }}{{ . }}	{{end}}│
+│						│
+{{- end }}
+└───────────────────────────────────────────────┘
+`
+
+func (g GameBoard) String() string {
+	t, err := template.New("Gameboard String").Parse(strTemplate)
+	if err != nil {
+		log.Fatal("Parse: ", err)
+		return ""
+	}
+	var str bytes.Buffer
+	if err := t.Execute(&str, g); err != nil {
+		log.Fatal("Execute: ", err)
+		return ""
+	}
+
+	return str.String()
+}
+
+/*
+CheckBoard starts the recursive breadth-first search on the gameboard.
+This one is the main bit. Iterates over the entire board, looking for words.
+Words can be strung together from any direction, so long as a letter has not
+been used more than once in the same word.
+*/
+func (g *GameBoard) CheckBoard(l lexicon.WordPrefixGroup) map[int][]string {
+	wip := new(rules.WordInProgress)
 	wip.Words = make(map[int][]string)
 
 	for y, row := range g.Board {
-		for x, _ := range row {
-			g.checkNeighbors(wip, x, y)
+		for x := range row {
+			g.checkNeighbors(l, wip, x, y)
 		}
 	}
 
@@ -85,7 +92,7 @@ func (g *GameBoard) CheckBoard() map[int][]string {
 	}
 	sort.Ints(keys)
 
-	wordLists := new(WordInProgress)
+	wordLists := new(rules.WordInProgress)
 	wordLists.Words = make(map[int][]string)
 	for _, key := range keys {
 		if key < 3 {
@@ -101,7 +108,7 @@ func (g *GameBoard) CheckBoard() map[int][]string {
 	return wordLists.Words
 }
 
-func (g *GameBoard) checkNeighbors(wip *WordInProgress, posX int, posY int) error {
+func (g *GameBoard) checkNeighbors(l lexicon.WordPrefixGroup, wip *rules.WordInProgress, posX int, posY int) error {
 	char := g.Board[posY][posX]
 	if char.InUse == true {
 		return nil
@@ -112,7 +119,7 @@ func (g *GameBoard) checkNeighbors(wip *WordInProgress, posX int, posY int) erro
 	if len(wip.Letters) >= 3 {
 		// check dictionary
 		word := wip.String()
-		valid, err := lexicon.CheckWord(g.ValidWords, word)
+		valid, err := lexicon.CheckWord(l, word)
 
 		// early return if prefix isn't in lexicon
 		if err != nil {
@@ -155,35 +162,35 @@ func (g *GameBoard) checkNeighbors(wip *WordInProgress, posX int, posY int) erro
 	pos8 := pos7 && pos1
 
 	if pos1 {
-		g.checkNeighbors(wip, posXright, posY)
+		g.checkNeighbors(l, wip, posXright, posY)
 	}
 
 	if pos2 {
-		g.checkNeighbors(wip, posXright, posYdown)
+		g.checkNeighbors(l, wip, posXright, posYdown)
 	}
 
 	if pos3 {
-		g.checkNeighbors(wip, posX, posYdown)
+		g.checkNeighbors(l, wip, posX, posYdown)
 	}
 
 	if pos4 {
-		g.checkNeighbors(wip, posXleft, posYdown)
+		g.checkNeighbors(l, wip, posXleft, posYdown)
 	}
 
 	if pos5 {
-		g.checkNeighbors(wip, posXleft, posY)
+		g.checkNeighbors(l, wip, posXleft, posY)
 	}
 
 	if pos6 {
-		g.checkNeighbors(wip, posXleft, posYup)
+		g.checkNeighbors(l, wip, posXleft, posYup)
 	}
 
 	if pos7 {
-		g.checkNeighbors(wip, posX, posYup)
+		g.checkNeighbors(l, wip, posX, posYup)
 	}
 
 	if pos8 {
-		g.checkNeighbors(wip, posXright, posYup)
+		g.checkNeighbors(l, wip, posXright, posYup)
 	}
 
 	char.InUse = false
@@ -193,7 +200,7 @@ func (g *GameBoard) checkNeighbors(wip *WordInProgress, posX int, posY int) erro
 	return nil
 }
 
-// Game Board Individual Cell
+// Cell is a Game Board individual space
 type Cell struct {
 	Character string
 	InUse     bool
@@ -201,72 +208,4 @@ type Cell struct {
 
 func (c Cell) String() string {
 	return c.Character
-}
-
-// Word In Progress
-type WordInProgress struct {
-	Letters []string
-	Words   map[int][]string
-}
-
-func (w WordInProgress) String() string {
-	word := ""
-	for _, letter := range w.Letters {
-		word += letter
-	}
-
-	return word
-}
-
-/**
- * Pushes a single character to the working word
- *
- * @param  string  letter  letter to be added to the end of the working word
- *
- * @returns  []string  list of all the letters in the current word
- */
-func (w *WordInProgress) Push(letter string) []string {
-	w.Letters = append(w.Letters, letter)
-	return w.Letters
-}
-
-/**
- * Pops the last character of the working word stack
- *
- * @returns  string  The letter that was removed from the working word
- */
-func (w *WordInProgress) Pop() string {
-	index := len(w.Letters) - 1
-	letter := w.Letters[index]
-	w.Letters = w.Letters[:index]
-	return letter
-}
-
-/**
- * Adds the passed word to the map of total matched words
- *
- * @param  string  word  The word to to added to the map
- */
-func (w *WordInProgress) AddWord(word string) {
-	key, list := w.getWordKey(word)
-
-	// dedupe list
-	for _, existingWord := range list {
-		if word == existingWord {
-			return
-		}
-	}
-
-	w.Words[key] = append(list, word)
-}
-
-func (w *WordInProgress) getWordKey(word string) (int, []string) {
-	key := len(word)
-	list, ok := w.Words[key]
-
-	if ok == false {
-		list = []string{}
-	}
-
-	return key, list
 }
