@@ -24,3 +24,15 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(500), 500)
 	}
 }
+
+func routes() {
+	// Static file serving
+	fileServer := http.FileServer(http.Dir("static"))
+	http.Handle("/assets/", fileServer)
+
+	http.HandleFunc("/solve", solverHandler)
+	http.HandleFunc("/", viewHandler)
+
+	http.HandleFunc("/healthcheck", health)
+	http.HandleFunc("/health", health)
+}

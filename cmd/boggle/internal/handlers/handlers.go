@@ -15,15 +15,7 @@ import (
 
 // Run starts the webserver.
 func Run() error {
-	// Static file serving
-	fileServer := http.FileServer(http.Dir("static"))
-	http.Handle("/assets/", fileServer)
-
-	http.HandleFunc("/solve", solverHandler)
-	http.HandleFunc("/", viewHandler)
-
-	http.HandleFunc("/healthcheck", health)
-	http.HandleFunc("/health", health)
+	routes()
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
