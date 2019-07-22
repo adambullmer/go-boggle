@@ -9,6 +9,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type resultData struct {
+	Words     map[int][]string
+	WordCount int
+}
+
 func solverHandler(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		// Handle error
@@ -31,10 +36,7 @@ func solverHandler(w http.ResponseWriter, r *http.Request) {
 		wordCount += len(wordList)
 	}
 
-	data := struct {
-		Words     map[int][]string
-		WordCount int
-	}{
+	data := resultData{
 		words,
 		wordCount,
 	}
