@@ -1,6 +1,6 @@
 goos: linux
 goarch: amd64
 pkg: github.com/adambullmer/go-boggle/internal/gameboard
-BenchmarkCheckBoard-8   	   10000	    588859 ns/op	  109058 B/op	    9933 allocs/op
+BenchmarkCheckBoard-8   	   10000	    582783 ns/op	  206325 B/op	    7066 allocs/op
 PASS
-ok  	github.com/adambullmer/go-boggle/internal/gameboard	9.255s
+ok  	github.com/adambullmer/go-boggle/internal/gameboard	9.000s

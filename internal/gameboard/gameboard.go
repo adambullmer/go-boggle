@@ -7,16 +7,14 @@ import (
 	"text/template"
 
 	"github.com/adambullmer/go-boggle/internal/lexicon"
-	"github.com/adambullmer/go-boggle/internal/rules"
 	log "github.com/sirupsen/logrus"
 )
 
 // The GameBoard type holds the state of all the characters on the gamebaord
 type GameBoard struct {
-	Width      int
-	Height     int
-	Board      [][]Cell
-	ValidWords lexicon.WordPrefixGroup
+	Width  int
+	Height int
+	Board  [][]Cell
 }
 
 /*
@@ -76,59 +74,64 @@ This one is the main bit. Iterates over the entire board, looking for words.
 Words can be strung together from any direction, so long as a letter has not
 been used more than once in the same word.
 */
-func (g *GameBoard) CheckBoard(l lexicon.WordPrefixGroup) map[int][]string {
-	wip := new(rules.WordInProgress)
-	wip.Words = make(map[int][]string)
+func (g *GameBoard) CheckBoard(l lexicon.WordPrefixGroup) Groups {
+	words := make(Words)
 
 	for y, row := range g.Board {
 		for x := range row {
-			g.checkNeighbors(l, wip, x, y)
+			wip := Letters{}
+			g.checkNeighbors(l, wip, &words, x, y)
 		}
 	}
 
-	keys := []int{}
-	for r := range wip.Words {
-		keys = append(keys, r)
+	var keys []int
+	groups := make(Groups)
+
+	for k := range words {
+		index := len(k)
+		if _, ok := groups[index]; ok == false {
+			groups[index] = make([]string, 0)
+			keys = append(keys, index)
+		}
+		groups[index] = append(groups[index], k)
 	}
 	sort.Ints(keys)
 
-	wordLists := new(rules.WordInProgress)
-	wordLists.Words = make(map[int][]string)
 	for _, key := range keys {
 		if key < 3 {
 			continue
 		}
 
-		words := wip.Words[key]
+		words := groups[key]
 
 		sort.Strings(words)
-		wordLists.Words[key] = words
+		groups[key] = words
 	}
 
-	return wordLists.Words
+	return groups
 }
 
-func (g *GameBoard) checkNeighbors(l lexicon.WordPrefixGroup, wip *rules.WordInProgress, posX int, posY int) error {
+func (g *GameBoard) checkNeighbors(l lexicon.WordPrefixGroup, wip Letters, words *Words, posX int, posY int) error {
 	char := g.Board[posY][posX]
 	if char.InUse == true {
 		return nil
 	}
 
-	wip.Letters = wip.Push(char.Character)
+	wip = append(wip, char.Character)
 
-	if len(wip.Letters) >= 3 {
+	if len(wip) >= 3 {
 		// check dictionary
 		word := wip.String()
 		valid, err := lexicon.CheckWord(l, word)
 
 		// early return if prefix isn't in lexicon
 		if err != nil {
-			wip.Pop()
+			wip = wip[:len(wip)-1]
 			return errors.New("")
 		}
 
 		if valid == true {
-			wip.AddWord(word)
+			(*words)[word] = struct{}{}
 		}
 	}
 
@@ -162,40 +165,42 @@ func (g *GameBoard) checkNeighbors(l lexicon.WordPrefixGroup, wip *rules.WordInP
 	pos8 := pos7 && pos1
 
 	if pos1 {
-		g.checkNeighbors(l, wip, posXright, posY)
+		g.checkNeighbors(l, wip, words, posXright, posY)
 	}
 
 	if pos2 {
-		g.checkNeighbors(l, wip, posXright, posYdown)
+		g.checkNeighbors(l, wip, words, posXright, posYdown)
 	}
 
 	if pos3 {
-		g.checkNeighbors(l, wip, posX, posYdown)
+		g.checkNeighbors(l, wip, words, posX, posYdown)
 	}
 
 	if pos4 {
-		g.checkNeighbors(l, wip, posXleft, posYdown)
+		g.checkNeighbors(l, wip, words, posXleft, posYdown)
 	}
 
 	if pos5 {
-		g.checkNeighbors(l, wip, posXleft, posY)
+		g.checkNeighbors(l, wip, words, posXleft, posY)
 	}
 
 	if pos6 {
-		g.checkNeighbors(l, wip, posXleft, posYup)
+		g.checkNeighbors(l, wip, words, posXleft, posYup)
 	}
 
 	if pos7 {
-		g.checkNeighbors(l, wip, posX, posYup)
+		g.checkNeighbors(l, wip, words, posX, posYup)
 	}
 
 	if pos8 {
-		g.checkNeighbors(l, wip, posXright, posYup)
+		g.checkNeighbors(l, wip, words, posXright, posYup)
 	}
 
 	char.InUse = false
 	g.Board[posY][posX] = char
-	wip.Pop()
+	if len(wip) > 0 {
+		wip = wip[:len(wip)-1]
+	}
 
 	return nil
 }
